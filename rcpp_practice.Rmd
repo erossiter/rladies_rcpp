@@ -1,0 +1,135 @@
+---
+title: "R-Ladies Rcpp Introduction"
+author: |
+  | Erin Rossiter
+  | Washington University in St. Louis
+  | erinrossiter@wustl.edu
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## What is Rcpp?
+
+- R package
+- Provides matching C++ classes for a large number of basic R data types
+- Pass in R objects to C++ functions which return R objects!
+- C++ is much, much faster than R
+- Example: `catSurv`
+    - some functions in packages written in R verses Rcpp/C++ are 10,000 times slower!
+    - 10 vs .001 seconds... 10 is too slow for real-time surveys
+
+## Goals for tonight
+
+1. Get Rcpp up and running on your computer (hopefully!!)
+2. Walk through prepared, example code
+3. Walk through how to set up your own code
+4. Practice activity
+
+
+## 1. Install Rcpp
+
+Rcpp isn't installed as easily as other R packages.  You need to have compiler tools for R. (I'm not a computer scientists, so I don't fully understand the intricacies of this.)  So before we can use the Rcpp functions, we need to install a compiler.  This is different for Mac vs PC.  
+
+
+### Mac
+
+Steps:
+
+1. Type `xcode-select --install` in the terminal **or** go to the App Store and install Xcode by hand
+2. Verify installation by typing `gcc --version` in the terminal
+
+<!--
+I got help on these instructions from
+http://thecoatlessprofessor.com/programming/r-compiler-tools-for-rcpp-on-os-x/
+-->
+
+### PC
+
+Requirements:
+
+1. Use Windows 7 or greater
+2. Use R version 3.3.0 or greater
+3. Be able to launch an application via “Run as Administrator” prompt
+
+
+Steps:
+
+1. Make sure R is installed on a path *without* spaces
+2. Get the compatible version of Rtools for your version of R -- 3 ways to do this:
+  - Way 1:
+    - Open a C++ file in RStudio: File > New File > C++ File
+    - Should prompt you to install Rtools.exe
+    - With .exe in hand, make sure you following the prompts as shown in steps 4 - 14 from http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/
+  - Way 2:
+    - Install and load the `installr` package
+    - Run `install.Rtools()`
+  - Way 3:
+    - Download by hand here: https://cran.r-project.org/bin/windows/Rtools/
+    - With .exe in hand, make sure you following the prompts as shown in steps 4 - 14 from http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/
+    
+
+<!--
+I got help on these instructions from
+http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/
+-->
+
+### Try it out
+
+Run this chunk of code to install and load the Rcpp package, source in a few functions I wrote, and execute one.  If a (non-error) message prints, you're ready to go!
+
+```{r warning=FALSE}
+#install.packages("Rcpp")
+library("Rcpp")
+
+sourceCpp(file = "rcpp_source.cpp")
+
+r_ladies()
+```
+
+
+## 2. Example Code
+
+### A C++ Primer
+
+Coding in C++ differs from R in 3 major ways:
+
+1. Must specify data types for everything
+2. Line breaks specified with a semicolon
+3. For our purposes, there's no vectorized operations
+
+
+```{r}
+## Basic c++ function format
+# return_type function_name(arg1_type arg1, arg2_type arg2, ...){
+#   code;
+#   code;
+#   return somthing;
+# }
+
+cppFunction('int add1(int x, int y, int z) {
+  int sum = x + y + z;
+  return sum;
+}')
+
+add1(1, 2, 3)
+add1(1.2, 2, 3)
+add1("hi", 2, 3)
+
+add2(1, 2, 3)
+
+evalCpp("1 + 2 + 3")
+```
+
+### Comparing Speed
+
+```{r}
+# install.packages("microbenchmark")
+library(microbenchmark)
+
+test_vec <- 1:10000
+microbenchmark(sum(test_vec^5), pow_and_sum(test_vec, 5), unit = "s")
+```
+
