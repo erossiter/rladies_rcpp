@@ -159,6 +159,13 @@ Washington University in St. Louis
 <li>Type <code>xcode-select --install</code> in the terminal <strong>or</strong> go to the App Store and install Xcode by hand</li>
 <li>Verify installation by typing <code>gcc --version</code> in the terminal</li>
 </ol>
+<p>I’m not sure if the next steps are necessary, so try the example code below. If the code doesn’t work, try:</p>
+<ol start="3" style="list-style-type: decimal">
+<li>Check if you have gfortran installed: <code>gfortran --version</code></li>
+<li><p>If not, run this in the terminal</p>
+<pre><code>curl -O http://r.research.att.com/libs/gfortran-4.8.2-darwin13.tar.bz2
+sudo tar fvxz gfortran-4.8.2-darwin13.tar.bz2 -C /</code></pre></li>
+</ol>
 <!--
 I got help on these instructions from
 http://thecoatlessprofessor.com/programming/r-compiler-tools-for-rcpp-on-os-x/
@@ -168,8 +175,8 @@ http://thecoatlessprofessor.com/programming/r-compiler-tools-for-rcpp-on-os-x/
 <h3>PC</h3>
 <p>Requirements:</p>
 <ol style="list-style-type: decimal">
-<li>Use Windows 7 or greater</li>
-<li>Use R version 3.3.0 or greater</li>
+<li>Windows 7 or greater</li>
+<li>R version 3.3.0 or greater</li>
 <li>Be able to launch an application via “Run as Administrator” prompt</li>
 </ol>
 <p>Steps:</p>
@@ -182,7 +189,6 @@ http://thecoatlessprofessor.com/programming/r-compiler-tools-for-rcpp-on-os-x/
 <ul>
 <li>Open a C++ file in RStudio: File &gt; New File &gt; C++ File</li>
 <li>Should prompt you to install Rtools.exe</li>
-<li>With .exe in hand, make sure you following the prompts as shown in steps 4 - 14 from <a href="http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/" class="uri">http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/</a></li>
 </ul></li>
 <li>Way 2:
 <ul>
@@ -192,9 +198,11 @@ http://thecoatlessprofessor.com/programming/r-compiler-tools-for-rcpp-on-os-x/
 <li>Way 3:
 <ul>
 <li>Download by hand here: <a href="https://cran.r-project.org/bin/windows/Rtools/" class="uri">https://cran.r-project.org/bin/windows/Rtools/</a></li>
-<li>With .exe in hand, make sure you following the prompts as shown in steps 4 - 14 from <a href="http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/" class="uri">http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/</a></li>
 </ul></li>
 </ul>
+<ol start="3" style="list-style-type: decimal">
+<li>With .exe in hand, make sure you following the prompts as shown in steps 4 - 14 from <a href="http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/" class="uri">http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/</a></li>
+</ol>
 <!--
 I got help on these instructions from
 http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/
@@ -217,9 +225,7 @@ r_ladies()</code></pre>
 <h2>2. Example Code</h2>
 <div id="a-c-primer" class="section level3">
 <h3>A C++ Primer</h3>
-<blockquote>
-<p>Please note, many of the following examples are not my own. They’re from Hadley Wickham’s book, Advanced R, found online here: <a href="http://adv-r.had.co.nz/Rcpp.html" class="uri">http://adv-r.had.co.nz/Rcpp.html</a>.</p>
-</blockquote>
+<p><em>Please note, many of the following examples are not my own. They’re from Hadley Wickham’s book, Advanced R, found online here:</em> <a href="http://adv-r.had.co.nz/Rcpp.html" class="uri">http://adv-r.had.co.nz/Rcpp.html</a>.</p>
 <p>Coding in C++ differs from R in several major ways:</p>
 <ol style="list-style-type: decimal">
 <li>Must specify data types for everything</li>
@@ -279,7 +285,7 @@ signR(5)</code></pre>
 </div>
 <div id="stand-alone-c" class="section level3">
 <h3>Stand-Alone C++</h3>
-<p>There’s another way to write and source in a C++ function: write all C++ source code in another file and use <code>sourceCpp(file = foo.cpp)</code> as we did above.</p>
+<p>There’s another way to write and source in a C++ function: write all C++ source code in another file and use <code>sourceCpp(file = &quot;foo.cpp&quot;)</code> as we did above.</p>
 <pre class="r"><code>add2(1, 2, 3) ## from file I provided, rcpp_source.cpp </code></pre>
 <pre><code>## [1] 6</code></pre>
 <p>I prefer writing functions in .cpp files over writing inline C++ code with <code>cppFunction()</code>. Writing stand-alone C++ code allows you to use the helpful text editor RStudio supplies (e.g., catches forgotten semicolons, auto indents, pretty colors, etc.)! However, it’s a bit more complicated.</p>
@@ -289,7 +295,7 @@ signR(5)</code></pre>
 <li><p>The file starts with these 2 lines:</p>
 <p><code>#include &lt;Rcpp.h&gt;</code></p>
 <p><code>using namespace Rcpp;</code></p></li>
-<li><p>Each function is preceeded by <code>// [[Rcpp::export]]</code></p></li>
+<li><p>Each function is preceded by <code>// [[Rcpp::export]]</code></p></li>
 </ol>
 <p>Let’s check out rcpp_source.cpp.</p>
 </div>
@@ -374,9 +380,9 @@ microbenchmark(sum(1:100),
                sumR(1:100))</code></pre>
 <pre><code>## Unit: nanoseconds
 ##         expr  min     lq     mean median     uq     max neval
-##   sum(1:100)  429  472.0   657.03  505.0  534.0    8131   100
-##  sumC(1:100) 1237 1360.5  7429.81 1429.5 1549.0  526382   100
-##  sumR(1:100) 3001 3079.5 20404.08 3128.0 3200.5 1723385   100</code></pre>
+##   sum(1:100)  610  936.0  1485.13 1217.5 1564.5    9724   100
+##  sumC(1:100) 2225 2539.5 19638.92 3054.5 4713.5 1527872   100
+##  sumR(1:100) 4794 5087.0 59306.21 5359.5 8723.0 5191906   100</code></pre>
 <pre class="r"><code>## Even at something R is good at, C++ is faster (trivial example, but still!)
 test_vec &lt;- 1:10000
 microbenchmark(sum(test_vec^5),
@@ -384,11 +390,11 @@ microbenchmark(sum(test_vec^5),
                unit = &quot;s&quot;)</code></pre>
 <pre><code>## Unit: seconds
 ##                      expr         min           lq         mean
-##           sum(test_vec^5) 0.000375127 0.0003753320 0.0003962237
-##  pow_and_sum(test_vec, 5) 0.000218983 0.0002231785 0.0002830952
+##           sum(test_vec^5) 0.000565276 0.0005662270 0.0006538236
+##  pow_and_sum(test_vec, 5) 0.000416668 0.0004483645 0.0005311712
 ##        median           uq         max neval
-##  0.0003767675 0.0004092790 0.000545226   100
-##  0.0002525035 0.0002888045 0.001307170   100</code></pre>
+##  0.0005972415 0.0006181445 0.002050179   100
+##  0.0004544220 0.0004916440 0.002159900   100</code></pre>
 </div>
 <div id="additional-functionality-if-time" class="section level3">
 <h3>Additional Functionality (if time)</h3>
@@ -426,7 +432,7 @@ foo() ## whatever you would call from R!
 sourceCpp(file = &quot;rcpp_source.cpp&quot;)
 
 ## does it work?
-# question1 &lt;- listC();</code></pre>
+# question1 &lt;- listC()</code></pre>
 </div>
 <div id="indexing-and-matrices" class="section level4">
 <h4>Indexing and Matrices</h4>

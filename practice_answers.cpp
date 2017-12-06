@@ -6,6 +6,26 @@ using namespace Rcpp;
 
 
 // [[Rcpp::export]]
+List listC(){
+
+  NumericVector vec(3);
+  vec[0] = 1.0;
+  vec[1] = 2.0;
+  vec[2] = 3.0;
+  
+  NumericMatrix mat(2, 2);
+  
+  int scalar = 10;
+  
+  List out(3);
+  out[0] = vec;
+  out[1] = mat;
+  out[2] = scalar;
+  
+  return out;
+}
+
+// [[Rcpp::export]]
 NumericVector rowMeansC(NumericMatrix x){
   int ncol = x.ncol();
   int nrow = x.nrow();

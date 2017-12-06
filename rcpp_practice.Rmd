@@ -9,6 +9,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Dropbox/Github/rladies_rcpp")
 ```
 
 ## What is Rcpp?
@@ -42,6 +43,16 @@ Steps:
 1. Type `xcode-select --install` in the terminal **or** go to the App Store and install Xcode by hand
 2. Verify installation by typing `gcc --version` in the terminal
 
+I'm not sure if the next steps are necessary, so try the example code below.  If the code doesn't work, try:
+
+3. Check if you have gfortran installed: `gfortran --version`
+4. If not, run this in the terminal
+```{}
+curl -O http://r.research.att.com/libs/gfortran-4.8.2-darwin13.tar.bz2
+sudo tar fvxz gfortran-4.8.2-darwin13.tar.bz2 -C /
+```
+
+
 <!--
 I got help on these instructions from
 http://thecoatlessprofessor.com/programming/r-compiler-tools-for-rcpp-on-os-x/
@@ -51,8 +62,8 @@ http://thecoatlessprofessor.com/programming/r-compiler-tools-for-rcpp-on-os-x/
 
 Requirements:
 
-1. Use Windows 7 or greater
-2. Use R version 3.3.0 or greater
+1. Windows 7 or greater
+2. R version 3.3.0 or greater
 3. Be able to launch an application via “Run as Administrator” prompt
 
 
@@ -63,13 +74,12 @@ Steps:
   - Way 1:
     - Open a C++ file in RStudio: File > New File > C++ File
     - Should prompt you to install Rtools.exe
-    - With .exe in hand, make sure you following the prompts as shown in steps 4 - 14 from http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/
   - Way 2:
     - Install and load the `installr` package
     - Run `install.Rtools()`
   - Way 3:
     - Download by hand here: https://cran.r-project.org/bin/windows/Rtools/
-    - With .exe in hand, make sure you following the prompts as shown in steps 4 - 14 from http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/
+3. With .exe in hand, make sure you following the prompts as shown in steps 4 - 14 from http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/
     
 
 <!--
@@ -97,7 +107,7 @@ r_ladies()
 
 ### A C++ Primer
 
-> Please note, many of the following examples are not my own.  They're from Hadley Wickham's book, Advanced R, found online here: http://adv-r.had.co.nz/Rcpp.html.
+*Please note, many of the following examples are not my own.  They're from Hadley Wickham's book, Advanced R, found online here:* http://adv-r.had.co.nz/Rcpp.html.
 
 Coding in C++ differs from R in several major ways:
 
@@ -161,7 +171,7 @@ evalCpp("5 > 0")
 ### Stand-Alone C++
 
 
-There's another way to write and source in a C++ function: write all C++ source code in another file and use `sourceCpp(file = foo.cpp)` as we did above.
+There's another way to write and source in a C++ function: write all C++ source code in another file and use `sourceCpp(file = "foo.cpp")` as we did above.
 
 ```{r}
 add2(1, 2, 3) ## from file I provided, rcpp_source.cpp 
@@ -178,7 +188,7 @@ Make sure:
     
     `using namespace Rcpp;`
     
-3. Each function is preceeded by
+3. Each function is preceded by
     ` // [[Rcpp::export]]`
     
 Let's check out rcpp_source.cpp.
@@ -305,7 +315,7 @@ The list contains:
 sourceCpp(file = "rcpp_source.cpp")
 
 ## does it work?
-# question1 <- listC();
+# question1 <- listC()
 ```
 
 
