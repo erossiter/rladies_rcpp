@@ -27,12 +27,12 @@ knitr::opts_chunk$set(echo = TRUE)
 2. Walk through example code
     - Ways to set up an Rcpp function
     - Some C++ basics
-3. Practice activity
+3. Practice problems
 
 
 ## 1. Install Rcpp
 
-Rcpp isn't installed as easily as other R packages.  You need to have compiler tools for R. (I'm not a computer scientists, so I don't fully understand the intricacies of this.)  So before we can use the Rcpp functions, we need to install a compiler.  This is different for Mac vs PC.  
+Rcpp isn't installed as easily as other R packages.  You need to have compiler tools for R. (I'm not a computer scientist, so I don't fully understand the intricacies of this.)  So before we can use the Rcpp functions, we need to install a compiler.  This is different for Mac vs PC.  
 
 
 ### Mac
@@ -89,10 +89,6 @@ library("Rcpp")
 sourceCpp(file = "rcpp_source.cpp")
 
 r_ladies()
-```
-
-```{r}
-
 ```
 
 
@@ -171,12 +167,17 @@ There's another way to write and source in a C++ function: write all C++ source 
 add2(1, 2, 3) ## from file I provided, rcpp_source.cpp 
 ```
 
-I prefer writing functions in .cpp files over writing inline C++ code with `cppFunction()`.  Writing stand-alone C++ code allows you to use the helpful text editor RStudio supplies (e.g., catches forgotten semicolons, auto indents, pretty colors, etc.)!  However, it's a bit more complicated.   Make sure:
+I prefer writing functions in .cpp files over writing inline C++ code with `cppFunction()`.  Writing stand-alone C++ code allows you to use the helpful text editor RStudio supplies (e.g., catches forgotten semicolons, auto indents, pretty colors, etc.)!  However, it's a bit more complicated.
+
+Make sure:
 
 1. Your file has a .cpp extension
-2. The file starts with:
+2. The file starts with these 2 lines:
+
     `#include <Rcpp.h>`
+    
     `using namespace Rcpp;`
+    
 3. Each function is preceeded by
     ` // [[Rcpp::export]]`
     
@@ -186,6 +187,7 @@ Let's check out rcpp_source.cpp.
 ### More Examples
 
 Some Rcpp data types:
+
 - `int`
 - `double`
 - `bool`
@@ -206,6 +208,27 @@ Let's check out rcpp_source.cpp for example functions using some of these types.
 
 Note: you can also just use C++ data types! I prefer this as there's a ton of C++ documentation, help files, Q&A, and example code online.  There's good documentation for Rcpp as well (e.g., Hadley Wickham's *Advanced R* chapter), just not as much.  
 
+```{r}
+sumC(1:10)
+
+check_greater(1:10, 5)
+
+fill_matrix(2, 2)
+fill_matrix(5, 5)
+
+set.seed(19813)
+x <- rnorm(1000, 10, 2)
+y <- .25*x + rnorm(1000)
+mod <- lm(y ~ x)
+mod
+grab_alpha(mod)
+
+our_list <- list_of_vectors()
+our_list$numeric
+our_list$integer
+our_list$logical
+our_list$string
+```
 
 
 
@@ -223,7 +246,7 @@ sumR <- function(x){
   return(total)
 }
 
-## Built-in sum() is unsurprisingly fast, but C++ is close!
+## Built-in sum() is unsurprisingly fast, and C++ looping is close!
 ## Comparable R function is much slower.
 microbenchmark(sum(1:100),
                sumC(1:100),
@@ -237,6 +260,72 @@ microbenchmark(sum(test_vec^5),
                unit = "s")
 ```
 
+
+### Additional Functionality (if time)
+
+#### Including R blocks in .cpp file.
+
+Helpful for development/testing.  I've never done this.  Add the following to your .cpp file.  Like a code chunk in Rmarkdown.
+
+
+```{r eval = FALSE, echo = TRUE}
+/*** R
+foo() ## whatever you would call from R!
+*/
+```
+
+
+#### Calling R functions in a C++ function
+
+Perhaps useful, but I think its tempting to be lazy and use this, potentially opening up a can of worms in your code!
+
+```{r}
+using_rfunc(sum, 1:10)
+using_rfunc(diff, 1:10)
+using_rfunc(cumsum, 1:10)
+```
+
+
+
+
 ## 3. Practice 
+
+#### Working with datatypes
+
+Write a C++ function called `listC` that returns a list of length 3.
+
+The list contains:
+
+  - the vector [1,2,3]
+  - a 2 by 2 matrix of zeros
+  - a scalar 10
+    
+```{r}
+## remember to always source in file with new function/edits!
+sourceCpp(file = "rcpp_source.cpp")
+
+## does it work?
+# question1 <- listC();
+```
+
+
+#### Indexing and Matrices
+
+Write a C++ function called `rowMeansC` to calculate column means of a matrix.  Assume no missing data. (Hint: if your matrix is `x`, `x.ncol()` and `x.nrow()` will give integer of number of columns and rows)
+
+```{r}
+## remember to always source in file with new function/edits!
+sourceCpp(file = "rcpp_source.cpp")
+
+set.seed(91308)
+test_mat <- matrix(sample(1:100, replace = F), nrow = 10, ncol = 10)
+
+## built-in R function
+rowMeans(test_mat)
+
+## does yours match?
+# rowMeansC(test_mat)
+```
+
 
 

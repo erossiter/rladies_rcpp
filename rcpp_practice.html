@@ -146,12 +146,12 @@ Washington University in St. Louis
 <li>Ways to set up an Rcpp function</li>
 <li>Some C++ basics</li>
 </ul></li>
-<li>Practice activity</li>
+<li>Practice problems</li>
 </ol>
 </div>
 <div id="install-rcpp" class="section level2">
 <h2>1. Install Rcpp</h2>
-<p>Rcpp isn’t installed as easily as other R packages. You need to have compiler tools for R. (I’m not a computer scientists, so I don’t fully understand the intricacies of this.) So before we can use the Rcpp functions, we need to install a compiler. This is different for Mac vs PC.</p>
+<p>Rcpp isn’t installed as easily as other R packages. You need to have compiler tools for R. (I’m not a computer scientist, so I don’t fully understand the intricacies of this.) So before we can use the Rcpp functions, we need to install a compiler. This is different for Mac vs PC.</p>
 <div id="mac" class="section level3">
 <h3>Mac</h3>
 <p>Steps:</p>
@@ -282,16 +282,77 @@ signR(5)</code></pre>
 <p>There’s another way to write and source in a C++ function: write all C++ source code in another file and use <code>sourceCpp(file = foo.cpp)</code> as we did above.</p>
 <pre class="r"><code>add2(1, 2, 3) ## from file I provided, rcpp_source.cpp </code></pre>
 <pre><code>## [1] 6</code></pre>
-<p>I prefer writing functions in .cpp files over writing inline C++ code with <code>cppFunction()</code>. Writing stand-alone C++ code allows you to use the helpful text editor RStudio supplies (e.g., catches forgotten semicolons, auto indents, pretty colors, etc.)! However, it’s a bit more complicated. Make sure:</p>
+<p>I prefer writing functions in .cpp files over writing inline C++ code with <code>cppFunction()</code>. Writing stand-alone C++ code allows you to use the helpful text editor RStudio supplies (e.g., catches forgotten semicolons, auto indents, pretty colors, etc.)! However, it’s a bit more complicated.</p>
+<p>Make sure:</p>
 <ol style="list-style-type: decimal">
 <li>Your file has a .cpp extension</li>
-<li>The file starts with: <code>#include &lt;Rcpp.h&gt;</code> <code>using namespace Rcpp;</code></li>
-<li>Each function is preceeded by <code>// [[Rcpp::export]]</code></li>
+<li><p>The file starts with these 2 lines:</p>
+<p><code>#include &lt;Rcpp.h&gt;</code></p>
+<p><code>using namespace Rcpp;</code></p></li>
+<li><p>Each function is preceeded by <code>// [[Rcpp::export]]</code></p></li>
 </ol>
 <p>Let’s check out rcpp_source.cpp.</p>
 </div>
 <div id="more-examples" class="section level3">
 <h3>More Examples</h3>
+<p>Some Rcpp data types:</p>
+<ul>
+<li><code>int</code></li>
+<li><code>double</code></li>
+<li><code>bool</code></li>
+<li><code>String</code></li>
+<li><code>NumericVector</code></li>
+<li><code>IntegerVector</code></li>
+<li><code>CharacterVector</code></li>
+<li><code>LogicalVector</code></li>
+<li><code>NumericMatrix</code></li>
+<li><code>IntegerMatrix</code></li>
+<li><code>CharacterMatrix</code></li>
+<li><code>LogicalMatrix</code></li>
+<li><code>List</code></li>
+<li><code>DataFrame</code></li>
+<li>…and more</li>
+</ul>
+<p>Let’s check out rcpp_source.cpp for example functions using some of these types.</p>
+<p>Note: you can also just use C++ data types! I prefer this as there’s a ton of C++ documentation, help files, Q&amp;A, and example code online. There’s good documentation for Rcpp as well (e.g., Hadley Wickham’s <em>Advanced R</em> chapter), just not as much.</p>
+<pre class="r"><code>sumC(1:10)</code></pre>
+<pre><code>## [1] 55</code></pre>
+<pre class="r"><code>check_greater(1:10, 5)</code></pre>
+<pre><code>##  [1] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE</code></pre>
+<pre class="r"><code>fill_matrix(2, 2)</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    0    1
+## [2,]    1    2</code></pre>
+<pre class="r"><code>fill_matrix(5, 5)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5]
+## [1,]    0    1    2    3    4
+## [2,]    1    2    3    4    5
+## [3,]    2    3    4    5    6
+## [4,]    3    4    5    6    7
+## [5,]    4    5    6    7    8</code></pre>
+<pre class="r"><code>set.seed(19813)
+x &lt;- rnorm(1000, 10, 2)
+y &lt;- .25*x + rnorm(1000)
+mod &lt;- lm(y ~ x)
+mod</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x)
+## 
+## Coefficients:
+## (Intercept)            x  
+##      0.3615       0.2187</code></pre>
+<pre class="r"><code>grab_alpha(mod)</code></pre>
+<pre><code>## [1] 0.3615475</code></pre>
+<pre class="r"><code>our_list &lt;- list_of_vectors()
+our_list$numeric</code></pre>
+<pre><code>## [1] 2.2 2.2 2.2 2.2</code></pre>
+<pre class="r"><code>our_list$integer</code></pre>
+<pre><code>##  [1] 1 1 1 1 1 1 1 1 1 1</code></pre>
+<pre class="r"><code>our_list$logical</code></pre>
+<pre><code>## [1] TRUE TRUE</code></pre>
+<pre class="r"><code>our_list$string</code></pre>
+<pre><code>## [1] &quot;hi&quot; &quot;hi&quot; &quot;hi&quot;</code></pre>
 </div>
 <div id="comparing-speed" class="section level3">
 <h3>Comparing Speed</h3>
@@ -306,32 +367,82 @@ sumR &lt;- function(x){
   return(total)
 }
 
-## Built-in sum() is unsurprisingly fast, but C++ is close!
+## Built-in sum() is unsurprisingly fast, and C++ looping is close!
 ## Comparable R function is much slower.
 microbenchmark(sum(1:100),
                sumC(1:100),
                sumR(1:100))</code></pre>
 <pre><code>## Unit: nanoseconds
-##         expr  min     lq     mean median   uq     max neval
-##   sum(1:100)  430  486.5   635.69  523.0  562    2439   100
-##  sumC(1:100) 1220 1437.0  8237.51 1517.5 1742  588742   100
-##  sumR(1:100) 3063 3137.5 19345.59 3185.5 3252 1606899   100</code></pre>
+##         expr  min     lq     mean median     uq     max neval
+##   sum(1:100)  429  472.0   657.03  505.0  534.0    8131   100
+##  sumC(1:100) 1237 1360.5  7429.81 1429.5 1549.0  526382   100
+##  sumR(1:100) 3001 3079.5 20404.08 3128.0 3200.5 1723385   100</code></pre>
 <pre class="r"><code>## Even at something R is good at, C++ is faster (trivial example, but still!)
 test_vec &lt;- 1:10000
 microbenchmark(sum(test_vec^5),
                pow_and_sum(test_vec, 5),
                unit = &quot;s&quot;)</code></pre>
 <pre><code>## Unit: seconds
-##                      expr         min          lq         mean
-##           sum(test_vec^5) 0.000375122 0.000375453 0.0003930131
-##  pow_and_sum(test_vec, 5) 0.000218475 0.000250062 0.0003046747
+##                      expr         min           lq         mean
+##           sum(test_vec^5) 0.000375127 0.0003753320 0.0003962237
+##  pow_and_sum(test_vec, 5) 0.000218983 0.0002231785 0.0002830952
 ##        median           uq         max neval
-##  0.0003757425 0.0004074335 0.000506611   100
-##  0.0002742345 0.0002934330 0.002036962   100</code></pre>
+##  0.0003767675 0.0004092790 0.000545226   100
+##  0.0002525035 0.0002888045 0.001307170   100</code></pre>
+</div>
+<div id="additional-functionality-if-time" class="section level3">
+<h3>Additional Functionality (if time)</h3>
+<div id="including-r-blocks-in-.cpp-file." class="section level4">
+<h4>Including R blocks in .cpp file.</h4>
+<p>Helpful for development/testing. I’ve never done this. Add the following to your .cpp file. Like a code chunk in Rmarkdown.</p>
+<pre class="r"><code>/*** R
+foo() ## whatever you would call from R!
+*/</code></pre>
+</div>
+<div id="calling-r-functions-in-a-c-function" class="section level4">
+<h4>Calling R functions in a C++ function</h4>
+<p>Perhaps useful, but I think its tempting to be lazy and use this, potentially opening up a can of worms in your code!</p>
+<pre class="r"><code>using_rfunc(sum, 1:10)</code></pre>
+<pre><code>## [1] 55</code></pre>
+<pre class="r"><code>using_rfunc(diff, 1:10)</code></pre>
+<pre><code>## [1] 1 1 1 1 1 1 1 1 1</code></pre>
+<pre class="r"><code>using_rfunc(cumsum, 1:10)</code></pre>
+<pre><code>##  [1]  1  3  6 10 15 21 28 36 45 55</code></pre>
+</div>
 </div>
 </div>
 <div id="practice" class="section level2">
 <h2>3. Practice</h2>
+<div id="working-with-datatypes" class="section level4">
+<h4>Working with datatypes</h4>
+<p>Write a C++ function called <code>listC</code> that returns a list of length 3.</p>
+<p>The list contains:</p>
+<ul>
+<li>the vector [1,2,3]</li>
+<li>a 2 by 2 matrix of zeros</li>
+<li>a scalar 10</li>
+</ul>
+<pre class="r"><code>## remember to always source in file with new function/edits!
+sourceCpp(file = &quot;rcpp_source.cpp&quot;)
+
+## does it work?
+# question1 &lt;- listC();</code></pre>
+</div>
+<div id="indexing-and-matrices" class="section level4">
+<h4>Indexing and Matrices</h4>
+<p>Write a C++ function called <code>rowMeansC</code> to calculate column means of a matrix. Assume no missing data. (Hint: if your matrix is <code>x</code>, <code>x.ncol()</code> and <code>x.nrow()</code> will give integer of number of columns and rows)</p>
+<pre class="r"><code>## remember to always source in file with new function/edits!
+sourceCpp(file = &quot;rcpp_source.cpp&quot;)
+
+set.seed(91308)
+test_mat &lt;- matrix(sample(1:100, replace = F), nrow = 10, ncol = 10)
+
+## built-in R function
+rowMeans(test_mat)</code></pre>
+<pre><code>##  [1] 43.2 52.6 43.5 59.7 42.6 63.6 63.7 54.1 36.8 45.2</code></pre>
+<pre class="r"><code>## does yours match?
+# rowMeansC(test_mat)</code></pre>
+</div>
 </div>
 
 
