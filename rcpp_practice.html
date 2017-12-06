@@ -133,7 +133,7 @@ Washington University in St. Louis
 <li>Example: <code>catSurv</code>
 <ul>
 <li>some functions in packages written in R verses Rcpp/C++ are 10,000 times slower!</li>
-<li>10 vs .001 seconds… 10 is too slow for real-time surveys</li>
+<li>10 vs .001 seconds… 10 seconds is too slow for real-time surveys</li>
 </ul></li>
 </ul>
 </div>
@@ -141,8 +141,11 @@ Washington University in St. Louis
 <h2>Goals for tonight</h2>
 <ol style="list-style-type: decimal">
 <li>Get Rcpp up and running on your computer (hopefully!!)</li>
-<li>Walk through prepared, example code</li>
-<li>Walk through how to set up your own code</li>
+<li>Walk through example code
+<ul>
+<li>Ways to set up an Rcpp function</li>
+<li>Some C++ basics</li>
+</ul></li>
 <li>Practice activity</li>
 </ol>
 </div>
@@ -203,6 +206,7 @@ http://thecoatlessprofessor.com/programming/rcpp/install-rtools-for-rcpp/
 <pre class="r"><code>#install.packages(&quot;Rcpp&quot;)
 library(&quot;Rcpp&quot;)
 
+## Functions should appear in global environment
 sourceCpp(file = &quot;rcpp_source.cpp&quot;)
 
 r_ladies()</code></pre>
@@ -213,18 +217,121 @@ r_ladies()</code></pre>
 <h2>2. Example Code</h2>
 <div id="a-c-primer" class="section level3">
 <h3>A C++ Primer</h3>
-<p>Coding in C++ differs from R in 3 major ways:</p>
+<blockquote>
+<p>Please note, many of the following examples are not my own. They’re from Hadley Wickham’s book, Advanced R, found online here: <a href="http://adv-r.had.co.nz/Rcpp.html" class="uri">http://adv-r.had.co.nz/Rcpp.html</a>.</p>
+</blockquote>
+<p>Coding in C++ differs from R in several major ways:</p>
 <ol style="list-style-type: decimal">
 <li>Must specify data types for everything</li>
 <li>Line breaks specified with a semicolon</li>
 <li>For our purposes, there’s no vectorized operations</li>
+<li>C++ vector indices <strong>start at zero</strong></li>
 </ol>
-<p>Basic c++ function format return_type function_name(arg1_type arg1, arg2_type arg2, …){ code; code; return somthing; }</p>
-<pre class="r"><code>cppFunction('int add1(int x, int y, int z) {
+<pre class="r"><code>## Basic c++ function format
+# return_type function_name(arg1_type arg1, arg2_type arg2, ...){
+#   code;
+#   code;
+#   return somthing;
+# }
+
+cppFunction('int add1(int x, int y, int z) {
   int sum = x + y + z;
   return sum;
-}')</code></pre>
+}')
+
+add1(1, 2, 3)</code></pre>
+<pre><code>## [1] 6</code></pre>
+<pre class="r"><code>add1(1.2, 2, 3)</code></pre>
+<pre><code>## [1] 6</code></pre>
+<pre class="r"><code>add1(TRUE, 2, 3)</code></pre>
+<pre><code>## [1] 6</code></pre>
+<pre class="r"><code>## or for simple operations
+evalCpp(&quot;1 + 2 + 3&quot;)</code></pre>
+<pre><code>## [1] 6</code></pre>
+<pre class="r"><code>## Equivalent R and C++ functions
+## Returns  1 if the input is positive and -1 if it’s negative
+signR &lt;- function(x) {
+  if (x &gt; 0) {
+    1
+  } else if (x == 0) {
+    0
+  } else {
+    -1
+  }
+}
+
+cppFunction('int signC(int x) {
+  if (x &gt; 0) {
+    return 1;
+  } else if (x == 0) {
+    return 0;
+  } else {
+    return -1;
+  }
+}')
+
+signR(5)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="r"><code>signC(5)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="r"><code>evalCpp(&quot;5 &gt; 0&quot;)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
 </div>
+<div id="stand-alone-c" class="section level3">
+<h3>Stand-Alone C++</h3>
+<p>There’s another way to write and source in a C++ function: write all C++ source code in another file and use <code>sourceCpp(file = foo.cpp)</code> as we did above.</p>
+<pre class="r"><code>add2(1, 2, 3) ## from file I provided, rcpp_source.cpp </code></pre>
+<pre><code>## [1] 6</code></pre>
+<p>I prefer writing functions in .cpp files over writing inline C++ code with <code>cppFunction()</code>. Writing stand-alone C++ code allows you to use the helpful text editor RStudio supplies (e.g., catches forgotten semicolons, auto indents, pretty colors, etc.)! However, it’s a bit more complicated. Make sure:</p>
+<ol style="list-style-type: decimal">
+<li>Your file has a .cpp extension</li>
+<li>The file starts with: <code>#include &lt;Rcpp.h&gt;</code> <code>using namespace Rcpp;</code></li>
+<li>Each function is preceeded by <code>// [[Rcpp::export]]</code></li>
+</ol>
+<p>Let’s check out rcpp_source.cpp.</p>
+</div>
+<div id="more-examples" class="section level3">
+<h3>More Examples</h3>
+</div>
+<div id="comparing-speed" class="section level3">
+<h3>Comparing Speed</h3>
+<pre class="r"><code># install.packages(&quot;microbenchmark&quot;)
+library(microbenchmark)
+
+sumR &lt;- function(x){
+  total &lt;- 0
+  for(i in x){
+    total &lt;- total + i
+  }
+  return(total)
+}
+
+## Built-in sum() is unsurprisingly fast, but C++ is close!
+## Comparable R function is much slower.
+microbenchmark(sum(1:100),
+               sumC(1:100),
+               sumR(1:100))</code></pre>
+<pre><code>## Unit: nanoseconds
+##         expr  min     lq     mean median   uq     max neval
+##   sum(1:100)  430  486.5   635.69  523.0  562    2439   100
+##  sumC(1:100) 1220 1437.0  8237.51 1517.5 1742  588742   100
+##  sumR(1:100) 3063 3137.5 19345.59 3185.5 3252 1606899   100</code></pre>
+<pre class="r"><code>## Even at something R is good at, C++ is faster (trivial example, but still!)
+test_vec &lt;- 1:10000
+microbenchmark(sum(test_vec^5),
+               pow_and_sum(test_vec, 5),
+               unit = &quot;s&quot;)</code></pre>
+<pre><code>## Unit: seconds
+##                      expr         min          lq         mean
+##           sum(test_vec^5) 0.000375122 0.000375453 0.0003930131
+##  pow_and_sum(test_vec, 5) 0.000218475 0.000250062 0.0003046747
+##        median           uq         max neval
+##  0.0003757425 0.0004074335 0.000506611   100
+##  0.0002742345 0.0002934330 0.002036962   100</code></pre>
+</div>
+</div>
+<div id="practice" class="section level2">
+<h2>3. Practice</h2>
 </div>
 
 

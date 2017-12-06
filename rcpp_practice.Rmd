@@ -19,14 +19,15 @@ knitr::opts_chunk$set(echo = TRUE)
 - C++ is much, much faster than R
 - Example: `catSurv`
     - some functions in packages written in R verses Rcpp/C++ are 10,000 times slower!
-    - 10 vs .001 seconds... 10 is too slow for real-time surveys
+    - 10 vs .001 seconds... 10 seconds is too slow for real-time surveys
 
 ## Goals for tonight
 
 1. Get Rcpp up and running on your computer (hopefully!!)
-2. Walk through prepared, example code
-3. Walk through how to set up your own code
-4. Practice activity
+2. Walk through example code
+    - Ways to set up an Rcpp function
+    - Some C++ basics
+3. Practice activity
 
 
 ## 1. Install Rcpp
@@ -84,15 +85,23 @@ Run this chunk of code to install and load the Rcpp package, source in a few fun
 #install.packages("Rcpp")
 library("Rcpp")
 
+## Functions should appear in global environment
 sourceCpp(file = "rcpp_source.cpp")
 
 r_ladies()
 ```
 
+```{r}
+
+```
+
+
 
 ## 2. Example Code
 
 ### A C++ Primer
+
+> Please note, many of the following examples are not my own.  They're from Hadley Wickham's book, Advanced R, found online here: http://adv-r.had.co.nz/Rcpp.html.
 
 Coding in C++ differs from R in several major ways:
 
@@ -100,8 +109,6 @@ Coding in C++ differs from R in several major ways:
 2. Line breaks specified with a semicolon
 3. For our purposes, there's no vectorized operations
 4. C++ vector indices **start at zero**
-
-Please note, most example are not my own.  I've taken them from Hadley Wickham's book, *Advanced R*, found online here: http://adv-r.had.co.nz/Rcpp.html.
 
 
 ```{r}
@@ -119,14 +126,11 @@ cppFunction('int add1(int x, int y, int z) {
 
 add1(1, 2, 3)
 add1(1.2, 2, 3)
-add1("hi", 2, 3)
+add1(TRUE, 2, 3)
 
-add2(1, 2, 3)
-
+## or for simple operations
 evalCpp("1 + 2 + 3")
 ```
-
-### More Examples
 
 ```{r}
 ## Equivalent R and C++ functions
@@ -153,7 +157,54 @@ cppFunction('int signC(int x) {
 
 signR(5)
 signC(5)
+
+evalCpp("5 > 0")
 ```
+
+
+### Stand-Alone C++
+
+
+There's another way to write and source in a C++ function: write all C++ source code in another file and use `sourceCpp(file = foo.cpp)` as we did above.
+
+```{r}
+add2(1, 2, 3) ## from file I provided, rcpp_source.cpp 
+```
+
+I prefer writing functions in .cpp files over writing inline C++ code with `cppFunction()`.  Writing stand-alone C++ code allows you to use the helpful text editor RStudio supplies (e.g., catches forgotten semicolons, auto indents, pretty colors, etc.)!  However, it's a bit more complicated.   Make sure:
+
+1. Your file has a .cpp extension
+2. The file starts with:
+    `#include <Rcpp.h>`
+    `using namespace Rcpp;`
+3. Each function is preceeded by
+    ` // [[Rcpp::export]]`
+    
+Let's check out rcpp_source.cpp.
+
+
+### More Examples
+
+Some Rcpp data types:
+- `int`
+- `double`
+- `bool`
+- `String`
+- `NumericVector`
+- `IntegerVector`
+- `CharacterVector`
+- `LogicalVector`
+- `NumericMatrix`
+- `IntegerMatrix`
+- `CharacterMatrix`
+- `LogicalMatrix` 
+- `List`
+- `DataFrame`
+- ...and more
+
+Let's check out rcpp_source.cpp for example functions using some of these types.
+
+Note: you can also just use C++ data types! I prefer this as there's a ton of C++ documentation, help files, Q&A, and example code online.  There's good documentation for Rcpp as well (e.g., Hadley Wickham's *Advanced R* chapter), just not as much.  
 
 
 
@@ -164,7 +215,28 @@ signC(5)
 # install.packages("microbenchmark")
 library(microbenchmark)
 
+sumR <- function(x){
+  total <- 0
+  for(i in x){
+    total <- total + i
+  }
+  return(total)
+}
+
+## Built-in sum() is unsurprisingly fast, but C++ is close!
+## Comparable R function is much slower.
+microbenchmark(sum(1:100),
+               sumC(1:100),
+               sumR(1:100))
+
+
+## Even at something R is good at, C++ is faster (trivial example, but still!)
 test_vec <- 1:10000
-microbenchmark(sum(test_vec^5), pow_and_sum(test_vec, 5), unit = "s")
+microbenchmark(sum(test_vec^5),
+               pow_and_sum(test_vec, 5),
+               unit = "s")
 ```
+
+## 3. Practice 
+
 

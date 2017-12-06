@@ -1,7 +1,9 @@
 #include <Rcpp.h>
-#include <vector> 
-using namespace Rcpp;
+#include <vector> //so we can use C++ vectors 
+using namespace Rcpp; //so we don't have to write Rcpp::NumericVector
 
+
+// So we can use C++ 11 functionality
 // [[Rcpp::plugins(cpp11)]]
 
 
@@ -18,9 +20,21 @@ int add2(int x, int y, int z) {
 
 
 // [[Rcpp::export]]
-double pow_and_sum(std::vector<double> vec, double power) {
+double sumC(NumericVector x) {
+  int n = x.size();
+  double total = 0;
+  for(int i = 0; i < n; ++i) {
+    total += x[i];
+  }
+  return total;
+}
+
+
+
+// [[Rcpp::export]]
+double pow_and_sum(std::vector<double> x, double power) {
   double out = 0.0;
-  for(auto &i : vec){
+  for(auto &i : x){
     out += pow(i, power);
   }
   return out;
